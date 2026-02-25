@@ -91,6 +91,11 @@ public class OrderInfo implements Serializable {
      */
     private String finishDate;
 
+    /**
+     * 碳消耗
+     */
+    private BigDecimal carbonConsumption;
+
     @TableField(exist = false)
     private String commodityName;
 
