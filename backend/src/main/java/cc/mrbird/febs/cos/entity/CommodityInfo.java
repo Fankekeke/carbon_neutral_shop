@@ -84,4 +84,10 @@ public class CommodityInfo implements Serializable {
      * 商品状态（0.下架 1.上架）
      */
     private String onPut;
+
+
+    /**
+     * 碳排放
+     */
+    private BigDecimal carbon;
 }

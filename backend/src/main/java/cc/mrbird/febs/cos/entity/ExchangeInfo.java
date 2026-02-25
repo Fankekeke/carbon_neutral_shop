@@ -5,65 +5,56 @@ import java.time.LocalDateTime;
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * 用户管理
+ * 积分兑换
  *
  * @author FanK
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class UserInfo implements Serializable {
+public class ExchangeInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(value = "ID", type = IdType.AUTO)
+    /**
+     * 主键ID
+     */
+    @TableId(type = IdType.AUTO)
     private Integer id;
 
     /**
-     * 用户编号
+     * 物品ID
      */
-    private String code;
+    private Integer materialId;
 
     /**
-     * 用户昵称
+     * 所属用户
      */
-    private String userName;
+    private Integer userId;
 
     /**
-     * 头像
+     * 消耗积分
      */
-    private String avatar;
-
-    /**
-     * 微信openID
-     */
-    private String openId;
-
-    /**
-     * 性别
-     */
-    private Integer sex;
-
-    /**
-     * 用户类型 1.普通用户 2.商铺
-     */
-    private Integer type;
+    private BigDecimal integral;
 
     /**
      * 创建时间
      */
     private String createDate;
 
-    /**
-     * 积分
-     */
-    private BigDecimal integral;
+    @TableField(exist = false)
+    private String code;
 
+    @TableField(exist = false)
+    private String userName;
 
+    @TableField(exist = false)
+    private String materialName;
 }

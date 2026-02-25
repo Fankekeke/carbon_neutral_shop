@@ -11,49 +11,44 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * 用户管理
+ * 物品积分
  *
  * @author FanK
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class UserInfo implements Serializable {
+public class MaterialInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(value = "ID", type = IdType.AUTO)
+    /**
+     * 主键ID
+     */
+    @TableId(type = IdType.AUTO)
     private Integer id;
 
     /**
-     * 用户编号
+     * 物品名称
      */
+    private String name;
+
     private String code;
 
     /**
-     * 用户昵称
+     * 物品介绍
      */
-    private String userName;
+    private String content;
 
     /**
-     * 头像
+     * 图片
      */
-    private String avatar;
+    private String images;
 
     /**
-     * 微信openID
+     * 所需积分
      */
-    private String openId;
-
-    /**
-     * 性别
-     */
-    private Integer sex;
-
-    /**
-     * 用户类型 1.普通用户 2.商铺
-     */
-    private Integer type;
+    private BigDecimal integral;
 
     /**
      * 创建时间
@@ -61,9 +56,9 @@ public class UserInfo implements Serializable {
     private String createDate;
 
     /**
-     * 积分
+     * 销量
      */
-    private BigDecimal integral;
+    private Integer saleNum;
 
 
 }
