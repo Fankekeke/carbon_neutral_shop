@@ -3,9 +3,11 @@ package cc.mrbird.febs.cos.service.impl;
 import cc.mrbird.febs.common.exception.FebsException;
 import cc.mrbird.febs.cos.entity.ExchangeInfo;
 import cc.mrbird.febs.cos.dao.ExchangeInfoMapper;
+import cc.mrbird.febs.cos.entity.IntegralRecord;
 import cc.mrbird.febs.cos.entity.MaterialInfo;
 import cc.mrbird.febs.cos.entity.UserInfo;
 import cc.mrbird.febs.cos.service.IExchangeInfoService;
+import cc.mrbird.febs.cos.service.IIntegralRecordService;
 import cc.mrbird.febs.cos.service.IMaterialInfoService;
 import cc.mrbird.febs.cos.service.IUserInfoService;
 import cn.hutool.core.date.DateUtil;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.LinkedHashMap;
 
@@ -32,6 +35,8 @@ public class ExchangeInfoServiceImpl extends ServiceImpl<ExchangeInfoMapper, Exc
     private final IUserInfoService userInfoService;
 
     private final IMaterialInfoService materialInfoService;
+
+    private final IIntegralRecordService integralRecordService;
 
     /**
      * 分页获取积分兑换信息
@@ -72,6 +77,14 @@ public class ExchangeInfoServiceImpl extends ServiceImpl<ExchangeInfoMapper, Exc
         // 添加物品销量
         materialInfo.setSaleNum(materialInfo.getSaleNum() + 1);
         materialInfoService.updateById(materialInfo);
+
+        // 添加用户积分记录
+        IntegralRecord integralRecord = new IntegralRecord();
+        integralRecord.setUserId(userInfo.getId());
+        integralRecord.setType("0");
+        integralRecord.setContent("兑换物品");
+        integralRecord.setIntegral(new BigDecimal(materialInfo.getCode()));
+        integralRecordService.save(integralRecord);
 
         // 更新用户积分
         userInfo.setIntegral(NumberUtil.sub(userInfo.getIntegral(), materialInfo.getIntegral()));

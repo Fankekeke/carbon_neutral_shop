@@ -183,6 +183,17 @@ export default {
           }
         }
       }, {
+        title: '碳消耗',
+        dataIndex: 'carbonConsumption',
+        ellipsis: true,
+        customRender: (text, row, index) => {
+          if (text !== null) {
+            return text
+          } else {
+            return '- -'
+          }
+        }
+      }, {
         title: '创建时间',
         dataIndex: 'createDate',
         customRender: (text, row, index) => {

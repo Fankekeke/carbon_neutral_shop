@@ -1,9 +1,11 @@
 package cc.mrbird.febs.cos.controller;
 
+import cc.mrbird.febs.common.exception.FebsException;
 import cc.mrbird.febs.common.utils.R;
 import cc.mrbird.febs.cos.entity.*;
 import cc.mrbird.febs.cos.service.*;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
@@ -19,10 +21,8 @@ import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api")
@@ -52,6 +52,12 @@ public class WebController {
     private final IEvaluationService evaluationService;
 
     private final IOrderDetailService orderDetailService;
+
+    private final IIntegralRecordService integralRecordService;
+
+    private final IMaterialInfoService materialInfoService;
+
+    private final IExchangeInfoService exchangeInfoService;
 
     @PostMapping("/userAdd")
     public R userAdd(@RequestBody UserInfo user) throws Exception {
@@ -198,6 +204,72 @@ public class WebController {
     }
 
     /**
+     * 进入小程序主页信息
+     *
+     * @return 结果
+     */
+    @GetMapping("/homeData")
+    public R homeData(Integer userId) {
+        // 获取用户的所有非待支付订单
+        List<OrderInfo> orderInfoList = orderInfoService.list(Wrappers.<OrderInfo>lambdaQuery()
+                .eq(OrderInfo::getUserId, userId)
+                .ne(OrderInfo::getOrderStatus, 0));
+
+        // 计算总减碳量
+        BigDecimal totalCarbonReduction = orderInfoList.stream()
+                .map(OrderInfo::getCarbonConsumption)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // 返回结果
+        LinkedHashMap<String, Object> result = new LinkedHashMap<>();
+        result.put("totalCarbonReduction", totalCarbonReduction);
+        // 上月开始时间和结束时间
+        String lastMonthStart = DateUtil.beginOfMonth(DateUtil.offsetMonth(new Date(), -1)).toString();
+        String lastMonthEnd = DateUtil.endOfMonth(DateUtil.offsetMonth(new Date(), -1)).toString();
+
+        // 查询上月订单
+        List<OrderInfo> lastMonthOrderList = orderInfoService.list(Wrappers.<OrderInfo>lambdaQuery()
+                .eq(OrderInfo::getUserId, userId)
+                .ne(OrderInfo::getOrderStatus, 0)
+                .between(OrderInfo::getCreateDate, lastMonthStart, lastMonthEnd));
+
+        // 计算上月减碳量
+        BigDecimal lastMonthCarbonReduction = lastMonthOrderList.stream()
+                .map(OrderInfo::getCarbonConsumption)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // 对比当前月和上月减碳量
+        BigDecimal currentMonthCarbonReduction = orderInfoList.stream()
+                .filter(order -> DateUtil.parse(order.getCreateDate()).isAfterOrEquals(DateUtil.beginOfMonth(new Date())))
+                .map(OrderInfo::getCarbonConsumption)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        result.put("currentMonthCarbonReduction", currentMonthCarbonReduction);
+        result.put("lastMonthCarbonReduction", lastMonthCarbonReduction);
+        result.put("carbonReductionComparison", currentMonthCarbonReduction.subtract(lastMonthCarbonReduction));
+
+
+        // 定义换算常量
+        BigDecimal drivingPerHour = new BigDecimal("0.2"); // 开车1小时碳排放
+        BigDecimal treeAbsorptionPerYear = new BigDecimal("18"); // 种一棵树一年吸收
+        BigDecimal elevatorPer10Floors = new BigDecimal("0.05"); // 10楼电梯碳排放
+
+        // 计算等效描述
+        BigDecimal drivingHours = totalCarbonReduction.divide(drivingPerHour, 2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal treesPlanted = totalCarbonReduction.divide(treeAbsorptionPerYear, 2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal elevatorRides = totalCarbonReduction.divide(elevatorPer10Floors, 2, BigDecimal.ROUND_HALF_UP);
+
+        // 添加到结果中
+        result.put("drivingHoursEquivalent", drivingHours);
+        result.put("treesPlantedEquivalent", treesPlanted);
+        result.put("elevatorRidesEquivalent", elevatorRides);
+        return R.ok(result);
+    }
+
+    /**
      * 用户添加审核信息
      *
      * @param auditInfo
@@ -322,6 +394,28 @@ public class WebController {
     @PostMapping("/replyPost")
     public R replyPost(@RequestBody ReplyInfo replyInfo) {
         replyInfo.setCreateDate(DateUtil.formatDateTime(new Date()));
+
+        String todayStart = DateUtil.beginOfDay(new Date()).toString();
+        String todayEnd = DateUtil.endOfDay(new Date()).toString();
+        long count = integralRecordService.count(Wrappers.<IntegralRecord>lambdaQuery()
+                .eq(IntegralRecord::getUserId, replyInfo.getUserId())
+                .eq(IntegralRecord::getType, "1")
+                .eq(IntegralRecord::getContent, "创建回复")
+                .between(IntegralRecord::getCreateDate, todayStart, todayEnd));
+        if (count == 0) {
+            // 添加用户积分记录
+            IntegralRecord integralRecord = new IntegralRecord();
+            integralRecord.setUserId(replyInfo.getUserId());
+            integralRecord.setType("1");
+            integralRecord.setContent("创建回复");
+            integralRecord.setIntegral(new BigDecimal(3));
+            integralRecordService.save(integralRecord);
+
+            UserInfo userInfo = userInfoService.getById(replyInfo.getUserId());
+            userInfo.setIntegral(NumberUtil.add(userInfo.getIntegral() == null ? BigDecimal.ZERO : userInfo.getIntegral(), 3));
+            userInfoService.updateById(userInfo);
+        }
+
         return R.ok(replyInfoService.save(replyInfo));
     }
 
@@ -334,6 +428,27 @@ public class WebController {
     @PostMapping("/postAdd")
     public R postAdd(@RequestBody PostInfo postInfo) {
         postInfo.setCreateDate(DateUtil.formatDateTime(new Date()));
+        String todayStart = DateUtil.beginOfDay(new Date()).toString();
+        String todayEnd = DateUtil.endOfDay(new Date()).toString();
+        long count = integralRecordService.count(Wrappers.<IntegralRecord>lambdaQuery()
+                .eq(IntegralRecord::getUserId, postInfo.getUserId())
+                .eq(IntegralRecord::getType, "1")
+                .eq(IntegralRecord::getContent, "发布贴子")
+                .between(IntegralRecord::getCreateDate, todayStart, todayEnd));
+        if (count == 0) {
+            // 添加用户积分记录
+            IntegralRecord integralRecord = new IntegralRecord();
+            integralRecord.setUserId(postInfo.getUserId());
+            integralRecord.setType("1");
+            integralRecord.setContent("发布贴子");
+            integralRecord.setIntegral(new BigDecimal(5));
+            integralRecordService.save(integralRecord);
+
+            UserInfo userInfo = userInfoService.getById(postInfo.getUserId());
+            userInfo.setIntegral(NumberUtil.add(userInfo.getIntegral() == null ? BigDecimal.ZERO : userInfo.getIntegral(), 5));
+            userInfoService.updateById(userInfo);
+        }
+
         return R.ok(postInfoService.save(postInfo));
     }
 
@@ -434,6 +549,7 @@ public class WebController {
 
         CommodityInfo commodityInfo = commodityInfoService.getOne(Wrappers.<CommodityInfo>lambdaQuery().eq(CommodityInfo::getId, orderInfo.getCommodityId()));
         if (commodityInfo != null) {
+            orderInfo.setCarbonConsumption(commodityInfo.getCarbon());
             orderInfo.setShopId(commodityInfo.getShopId());
         }
 
@@ -445,6 +561,18 @@ public class WebController {
         orderDetail.setCreateDate(DateUtil.formatDateTime(new Date()));
         orderDetail.setAddressId(orderInfo.getAddressId());
         orderDetailService.save(orderDetail);
+
+        // 添加用户积分记录
+        IntegralRecord integralRecord = new IntegralRecord();
+        integralRecord.setUserId(orderInfo.getUserId());
+        integralRecord.setType("1");
+        integralRecord.setContent("购买商品");
+        integralRecord.setIntegral(orderInfo.getPrice());
+        integralRecordService.save(integralRecord);
+
+        UserInfo userInfo = userInfoService.getById(orderInfo.getUserId());
+        userInfo.setIntegral(NumberUtil.add(userInfo.getIntegral() == null ? BigDecimal.ZERO : userInfo.getIntegral(), orderInfo.getPrice()));
+        userInfoService.updateById(userInfo);
 
         return R.ok(orderInfoService.save(orderInfo));
     }
@@ -479,7 +607,7 @@ public class WebController {
     @GetMapping("/goodsCartComplete")
     public R goodsCartComplete(@RequestParam List<String> ids) {
         return R.ok(orderInfoService.update(Wrappers.<OrderInfo>lambdaUpdate().set(OrderInfo::getPayDate, DateUtil.formatDateTime(new Date()))
-                        .set(OrderInfo::getUserNum, 1)
+                .set(OrderInfo::getUserNum, 1)
                 .set(OrderInfo::getOrderStatus, 1).in(OrderInfo::getId, ids)));
     }
 
@@ -506,6 +634,7 @@ public class WebController {
 
         CommodityInfo commodityInfo = commodityInfoService.getOne(Wrappers.<CommodityInfo>lambdaQuery().eq(CommodityInfo::getId, orderInfo.getCommodityId()));
         if (commodityInfo != null) {
+            orderInfo.setCarbonConsumption(commodityInfo.getCarbon());
             orderInfo.setShopId(commodityInfo.getShopId());
         }
 
@@ -517,6 +646,18 @@ public class WebController {
         orderDetail.setCreateDate(DateUtil.formatDateTime(new Date()));
         orderDetail.setAddressId(orderInfo.getAddressId());
         orderDetailService.save(orderDetail);
+
+        // 添加用户积分记录
+        IntegralRecord integralRecord = new IntegralRecord();
+        integralRecord.setUserId(orderInfo.getUserId());
+        integralRecord.setType("1");
+        integralRecord.setContent("购买商品");
+        integralRecord.setIntegral(orderInfo.getPrice());
+        integralRecordService.save(integralRecord);
+
+        UserInfo userInfo = userInfoService.getById(orderInfo.getUserId());
+        userInfo.setIntegral(NumberUtil.add(userInfo.getIntegral() == null ? BigDecimal.ZERO : userInfo.getIntegral(), orderInfo.getPrice()));
+        userInfoService.updateById(userInfo);
 
         return R.ok(orderInfoService.save(orderInfo));
     }
@@ -681,5 +822,36 @@ public class WebController {
     @GetMapping("/getOrderByUserId")
     public R getOrderByUserId(@RequestParam Integer userId) {
         return R.ok(orderInfoService.getOrderByUserId(userId));
+    }
+
+    /**
+     * 查询兑换物品信息
+     *
+     * @return 物品信息
+     */
+    @GetMapping("/queryMaterialInfoList")
+    public R queryMaterialInfoList() {
+        return R.ok(materialInfoService.list());
+    }
+
+    /**
+     * 添加兑换信息
+     *
+     * @param exchangeInfo 兑换信息
+     * @return 添加结果
+     */
+    @PostMapping("/exchangeInfoAdd")
+    public R exchangeInfoAdd(@RequestBody ExchangeInfo exchangeInfo) throws FebsException {
+        return R.ok(exchangeInfoService.addExchange(exchangeInfo));
+    }
+
+    /**
+     * 查询积分记录
+     *
+     * @return 积分记录
+     */
+    @GetMapping("/queryIntegralRecordList")
+    public R queryIntegralRecordList(Integer userId) {
+        return R.ok(integralRecordService.list(Wrappers.<IntegralRecord>lambdaQuery().eq(IntegralRecord::getUserId, userId)));
     }
 }

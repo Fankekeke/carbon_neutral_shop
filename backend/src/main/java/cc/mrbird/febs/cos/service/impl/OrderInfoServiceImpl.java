@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author FanK
@@ -83,6 +84,27 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         // 所有店铺信息
         List<LinkedHashMap<String, Object>> shopList = baseMapper.shopList();
         result.put("shopList", shopList);
+        // 统计减碳分析
+        List<OrderInfo> orderInfoList = this.list(Wrappers.<OrderInfo>lambdaQuery().ne(OrderInfo::getOrderStatus, 0));
+
+        // 总减碳量
+        BigDecimal totalCarbonReduction = orderInfoList.stream()
+                .map(OrderInfo::getCarbonConsumption)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // 当日减碳量
+        List<OrderInfo> dailyOrders = this.list(Wrappers.<OrderInfo>lambdaQuery()
+                .ne(OrderInfo::getOrderStatus, 0)
+                .apply("DATE(create_date) = CURDATE()"));
+        BigDecimal dailyCarbonReduction = dailyOrders.stream()
+                .map(OrderInfo::getCarbonConsumption)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        result.put("totalCarbonReduction", totalCarbonReduction);
+        result.put("dailyCarbonReduction", dailyCarbonReduction);
+
         return result;
     }
 

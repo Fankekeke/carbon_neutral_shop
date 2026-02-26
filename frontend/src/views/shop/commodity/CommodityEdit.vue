@@ -63,6 +63,14 @@
             </a-radio-group>
           </a-form-item>
         </a-col>
+        <a-col :span="12">
+          <a-form-item label='碳消耗' v-bind="formItemLayout">
+            <a-input-number
+              style="width: 100%"
+              :min="0"
+              v-decorator="[ 'carbonConsumption', { rules: [{ required: true, message: '请输入碳消耗!' }] } ]"/>
+          </a-form-item>
+        </a-col>
         <a-col :span="24">
           <a-form-item label='备注' v-bind="formItemLayout">
             <a-textarea :rows="6" v-decorator="[
@@ -176,7 +184,7 @@ export default {
     },
     setFormValues ({...commodity}) {
       this.rowId = commodity.id
-      let fields = ['name', 'price', 'stockNum', 'model', 'content', 'onPut', 'type']
+      let fields = ['name', 'price', 'stockNum', 'model', 'content', 'onPut', 'type', 'carbonConsumption']
       let obj = {}
       Object.keys(commodity).forEach((key) => {
         if (key === 'images') {
