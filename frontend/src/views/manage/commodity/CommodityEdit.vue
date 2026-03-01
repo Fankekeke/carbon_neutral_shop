@@ -68,7 +68,7 @@
             <a-input-number
               style="width: 100%"
               :min="0"
-              v-decorator="[ 'carbonConsumption', { rules: [{ required: true, message: '请输入碳消耗!' }] } ]"/>
+              v-decorator="[ 'carbon', { rules: [{ required: true, message: '请输入碳消耗!' }] } ]"/>
           </a-form-item>
         </a-col>
         <a-col :span="24">
@@ -184,7 +184,7 @@ export default {
     },
     setFormValues ({...commodity}) {
       this.rowId = commodity.id
-      let fields = ['name', 'price', 'stockNum', 'model', 'content', 'onPut', 'type', 'carbonConsumption']
+      let fields = ['name', 'price', 'stockNum', 'model', 'content', 'onPut', 'type', 'carbon']
       let obj = {}
       Object.keys(commodity).forEach((key) => {
         if (key === 'images') {

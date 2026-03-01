@@ -1,57 +1,68 @@
+
 <!-- 状态栏区域 -->
 <view class="cu-custom" style="height:{{CustomBar}}px;">
     <view class="cu-bar fixed none-bg text-white bg-img" style="height:{{CustomBar}}px;padding-top:{{StatusBar}}px;">
         <navigator class='action canui-head-title' open-type="navigateBack" hover-class="none">
             <text class='icon-back'></text>
-            我的商品
+            积分记录
         </navigator>
     </view>
 </view>
 <view class="box" style="top: {{CustomBar}}px;">
     <view class="canui-card-order margin-top">
-        <view class="canui-order-item bg-white" wx:for="{{ orderList }}">
-            <view class="head-title-box">
-                <view class="cu-tag sm bg-{{item.onPut == 1 ? 'blue' : 'red'}}">{{item.onPut == 1 ? '上架中' : '下架中'}}</view>
-            </view>
-            <view>
-                <view class="cu-list menu menu-avatar">
-                    <view class="cu-item">
-                        <view class="cu-avatar radius lg" style="background-image:url(http://127.0.0.1:9527/imagesWeb/{{ item.image }});"></view>
-                        <view class='content canui-xzwz tow' style="padding-left: 15px">
-                            {{ item.name }}
-                            <view style="font-size: 12px" wx:if="{{ item.type == 1 }}">食品</view>
-                            <view style="font-size: 12px" wx:if="{{ item.type == 2 }}">饮品</view>
-                            <view style="font-size: 12px" wx:if="{{ item.type == 3 }}">药品</view>
-                        </view>
-                        <view class='action' style="padding-left: 15px">
-                            <view class='text-price text-red'>{{ item.price }}</view>
-                            <view class="text-xs text-right text-gray">x1</view>
-                        </view>
+        <!-- 积分统计概览 -->
+        <view class="integral-summary shadow-warp radius bg-white margin-bottom">
+            <view class="padding">
+                <view class="flex justify-between align-center">
+                    <view class="text-center flex-sub">
+                        <view class="text-orange text-xxl">{{totalIncome || 0}}</view>
+                        <view class="text-gray text-sm">收入积分</view>
+                    </view>
+                    <view class="text-center flex-sub">
+                        <view class="text-red text-xxl">{{totalExpense || 0}}</view>
+                        <view class="text-gray text-sm">支出积分</view>
                     </view>
                 </view>
             </view>
-            <view>
-                <text class="text-right text-red canui-text-left" style="font-size: 11px">
-                    {{ item.content != null ? item.content : '- -' }}
-                </text>
-            </view>
-            <view class="order-price-box">
-                <text style="font-size: 12px">{{ item.days }}创建</text>
-            </view>
-            <view class="grid col-4 flex justify-end order-btn-box">
-                <view class='margin-tb-sm text-center'>
-                    <button class='cu-btn round line-red shadow' bindtap="edit" data-index="{{item.id}}">
-                        修改
-                    </button>
-                </view>
-            </view>
         </view>
-        <view wx:if="{{ orderList.length === 0 }}">
-            <van-empty style="height: 400px;margin: 0 auto" description="无商品信息" />
+
+        <!-- 积分记录列表 -->
+        <view class="integral-record-list">
+            <view class="record-item shadow-warp radius bg-white margin-bottom" wx:for="{{orderList}}" wx:key="id">
+                <!-- 记录头部 -->
+                <view class="record-header flex justify-between align-center padding">
+                    <view class="flex align-center">
+                        <view class="record-icon {{item.type == '1' ? 'bg-green' : 'bg-red'}} round cu-avatar sm">
+                            <text class="text-white {{item.type == '1' ? 'icon-add' : 'icon-reduce'}}"></text>
+                        </view>
+                        <view class="margin-left-sm">
+                            <view class="text-bold">{{item.content}}</view>
+                            <view class="text-gray text-sm">{{item.createDate}}</view>
+                        </view>
+                    </view>
+                    <view class="text-right">
+                        <view class="text-price {{item.type == '1' ? 'text-green' : 'text-red'}}">
+                            {{item.type == '1' ? '+' : '-'}}{{item.integral}}
+                        </view>
+                        <view class="text-gray text-sm">积分</view>
+                    </view>
+                </view>
+
+                <!-- 记录详情 -->
+<!--                <view class="record-detail padding-lr padding-bottom">-->
+<!--                    <view class="flex justify-between text-gray text-sm">-->
+<!--                        <view>记录ID: {{item.id}}</view>-->
+<!--                        <view>用户ID: {{item.userId}}</view>-->
+<!--                    </view>-->
+<!--                </view>-->
+            </view>
+
+            <!-- 空状态 -->
+            <view wx:if="{{orderList.length === 0}}" class="empty-state text-center padding-xl">
+                <view class="icon-empty text-gray text-xxl margin-bottom">📊</view>
+                <view class="text-gray">暂无积分记录</view>
+                <view class="text-gray text-sm margin-top">参与活动可获得积分奖励</view>
+            </view>
         </view>
     </view>
-</view>
-
-<view class="canui-foor-fixed {{TabbarBot=='y'?'canui-tabbar-bottom':''}}">
-    <button class="cu-btn canui-color-gradual shadow-blur round lg" bindtap='add'><text class="icon-add"></text> 新增商品</button>
 </view>

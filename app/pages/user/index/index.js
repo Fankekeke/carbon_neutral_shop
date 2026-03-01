@@ -1,3 +1,4 @@
+
 // pages/user/index.js
 var app = getApp();
 var isLoginSuccess = false;
@@ -11,6 +12,18 @@ Page({
     starCount: 0,
     forksCount: 0,
     visitTotal: 0,
+    dataMap: null
+  },
+  onShow() {
+    wx.getStorage({
+      key: 'userInfo',
+      success: (res) => {
+        console.log(res.data.id)
+        this.homeData(res.data.id)
+      },
+      fail: res => {
+      }
+    })
   },
   onLoad: function (options) {
     //进入页面判断是否可以使用wx.getUserProfile
@@ -54,7 +67,30 @@ Page({
       success: (res) => {
         app.globalData.userInfo = res.data
         this.initLoginMsg()
+        // 登录成功后获取碳排放数据
+        this.homeData(res.data.id)
       }
+    })
+  },
+  homeData(userId) {
+    http.get('homeData', { userId }).then((r) => {
+      this.setData({
+        dataMap: r
+      })
+    }).catch(error => {
+      console.error('获取碳排放数据失败:', error)
+      // 设置默认值防止页面报错
+      this.setData({
+        dataMap: {
+          totalCarbonReduction: 0,
+          currentMonthCarbonReduction: 0,
+          lastMonthCarbonReduction: 0,
+          carbonReductionComparison: 0,
+          drivingHoursEquivalent: 0,
+          treesPlantedEquivalent: 0,
+          elevatorRidesEquivalent: 0
+        }
+      })
     })
   },
   getUserProfile(e) {
@@ -80,6 +116,7 @@ Page({
                   userInfo: res.data,
                   hasUserInfo: true
                 })
+                that.homeData(res.data.id)
                 // 可以将 res 发送给后台解码出 unionId
                 app.globalData.userInfo = res.data
                 wx.setStorage({

@@ -79,65 +79,61 @@ page {
     background:#f1f1f1;
 }
 
-/* 积分记录样式 */
-.integral-summary {
+/* 兑换记录样式 */
+.exchange-record-list {
+    padding: 20rpx 0;
+}
+
+.exchange-item {
     margin-bottom: 30rpx;
-}
-
-.integral-summary .text-price {
-    font-weight: bold;
-}
-
-.record-item {
-    margin-bottom: 20rpx;
     overflow: hidden;
 }
 
-.record-header {
-    border-bottom: 1rpx solid #f0f0f0;
+.exchange-header {
+    background-color: #f8f9fa;
+    border-bottom: 1rpx solid #eee;
 }
 
-.record-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.exchange-content {
+    padding: 20rpx;
 }
 
-.record-icon.text-green {
-    background-color: #39b54a;
+.exchange-image {
+    width: 160rpx;
+    height: 160rpx;
+    border-radius: 10rpx;
+    overflow: hidden;
 }
 
-.record-icon.text-red {
-    background-color: #e54d42;
+.exchange-image image {
+    width: 100%;
+    height: 100%;
 }
 
-.icon-add::before {
-    content: "+";
-    font-size: 28rpx;
+.exchange-material-name {
+    font-size: 30rpx;
+    line-height: 1.4;
+    color: #333;
+    height: 84rpx;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+.exchange-user-info .cu-avatar {
+    border: 2rpx solid #fff;
+    box-shadow: 0 2rpx 6rpx rgba(0,0,0,0.1);
+}
+
+.exchange-integral .text-price {
+    font-size: 36rpx;
     font-weight: bold;
 }
 
-.icon-reduce::before {
-    content: "-";
-    font-size: 28rpx;
-    font-weight: bold;
-}
-
-.record-detail {
+.exchange-footer {
+    padding: 20rpx;
     background-color: #fafafa;
-}
-
-.text-price {
-    font-size: 32rpx;
-    font-weight: bold;
-}
-
-.text-price.text-green {
-    color: #39b54a;
-}
-
-.text-price.text-red {
-    color: #e54d42;
 }
 
 .empty-state {

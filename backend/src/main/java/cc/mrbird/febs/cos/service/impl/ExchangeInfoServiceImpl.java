@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * @author FanK
@@ -48,6 +49,17 @@ public class ExchangeInfoServiceImpl extends ServiceImpl<ExchangeInfoMapper, Exc
     @Override
     public IPage<LinkedHashMap<String, Object>> selectExChangePage(Page<ExchangeInfo> page, ExchangeInfo exchangeInfo) {
         return baseMapper.selectExChangePage(page, exchangeInfo);
+    }
+
+    /**
+     * 获取用户积分兑换信息
+     *
+     * @param userId 用户ID
+     * @return 结果
+     */
+    @Override
+    public List<LinkedHashMap<String, Object>> queryExchangeByUser(Integer userId) {
+        return baseMapper.queryExchangeByUser(userId);
     }
 
     /**
@@ -83,7 +95,7 @@ public class ExchangeInfoServiceImpl extends ServiceImpl<ExchangeInfoMapper, Exc
         integralRecord.setUserId(userInfo.getId());
         integralRecord.setType("0");
         integralRecord.setContent("兑换物品");
-        integralRecord.setIntegral(new BigDecimal(materialInfo.getCode()));
+        integralRecord.setIntegral(materialInfo.getIntegral());
         integralRecordService.save(integralRecord);
 
         // 更新用户积分

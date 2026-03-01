@@ -51,7 +51,7 @@
       <br/>
       <a-row style="padding-left: 24px;padding-right: 24px;">
         <a-col :span="8"><b>碳消耗：</b>
-          {{ commodityData.carbonConsumption }}
+          {{ commodityData.carbon }}
         </a-col>
       </a-row>
       <br/>

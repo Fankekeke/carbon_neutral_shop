@@ -7,12 +7,9 @@ Page({
     CustomBar: app.globalData.CustomBar,
     TabbarBot: app.globalData.tabbar_bottom,
     TabCur: 0, scrollLeft: 0,
-    SortMenu: [{ id: 0, name: "全部记录" }, { id: 1, name: "收入" }, { id: 2, name: "支出" }],
+    SortMenu: [{ id: 0, name: "全部订单" }, { id: 1, name: "待收货" }, { id: 2, name: "已完成" }],
     userInfo: null,
     orderList: [],
-    totalIncome: 0,
-    totalExpense: 0,
-    balance: 0
   },
   onLoad: function (options) {
 
@@ -22,7 +19,7 @@ Page({
       key: 'userInfo',
       success: (res) => {
         this.setData({ userInfo: res.data })
-        this.queryIntegralRecordList(res.data.id)
+        this.queryExchangeInfoList(res.data.id)
       },
       fail: res => {
         wx.showToast({
@@ -33,25 +30,10 @@ Page({
       }
     })
   },
-  queryIntegralRecordList(userId) {
-    http.get('queryIntegralRecordList', { userId }).then((r) => {
-      // 计算统计信息
-      let totalIncome = 0;
-      let totalExpense = 0;
-
-      r.data.forEach(item => {
-        if (item.type === '1') {
-          totalIncome += item.integral;
-        } else if (item.type === '0' || item.type === '2') {
-          totalExpense += item.integral;
-        }
-      });
-
+  queryExchangeInfoList(userId) {
+    http.get('queryExchangeInfoList', { userId }).then((r) => {
       this.setData({
-        orderList: r.data,
-        totalIncome: totalIncome,
-        totalExpense: totalExpense,
-        balance: totalIncome - totalExpense
+        orderList: r.data
       })
     })
   },
@@ -113,30 +95,18 @@ Page({
       })
     })
   },
-  // 切换筛选条件
-  tabSelect(e) {
-    const tabId = e.currentTarget.dataset.id;
-    this.setData({
-      TabCur: tabId,
-      scrollLeft: (tabId - 1) * 60
+  // 查看兑换详情
+  viewExchangeDetail(e) {
+    const exchangeId = e.currentTarget.dataset.id;
+    wx.navigateTo({
+      url: `/pages/vipcard/details/index?id=${exchangeId}`
     });
-
-    // 根据筛选条件过滤数据
-    let filteredList = [];
-    switch(tabId) {
-      case 0: // 全部记录
-        filteredList = this.data.orderList;
-        break;
-      case 1: // 收入记录
-        filteredList = this.data.orderList.filter(item => item.type === '1');
-        break;
-      case 2: // 支出记录
-        filteredList = this.data.orderList.filter(item => item.type === '0' || item.type === '2');
-        break;
+  },
+  // 下拉刷新
+  onPullDownRefresh() {
+    if (this.data.userInfo) {
+      this.queryExchangeInfoList(this.data.userInfo.id);
     }
-
-    this.setData({
-      filteredOrderList: filteredList
-    });
+    wx.stopPullDownRefresh();
   }
 });

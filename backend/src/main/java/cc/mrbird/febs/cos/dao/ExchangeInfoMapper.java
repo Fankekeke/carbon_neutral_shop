@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * @author FanK
@@ -21,4 +22,12 @@ public interface ExchangeInfoMapper extends BaseMapper<ExchangeInfo> {
      * @return 结果
      */
     IPage<LinkedHashMap<String, Object>> selectExChangePage(Page<ExchangeInfo> page, @Param("exchangeInfo") ExchangeInfo exchangeInfo);
+
+    /**
+     * 获取用户积分兑换信息
+     *
+     * @param userId 用户ID
+     * @return 结果
+     */
+    List<LinkedHashMap<String, Object>> queryExchangeByUser(@Param("userId") Integer userId);
 }

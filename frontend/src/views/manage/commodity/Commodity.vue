@@ -190,7 +190,7 @@ export default {
         }
       }, {
         title: '碳消耗',
-        dataIndex: 'carbonConsumption',
+        dataIndex: 'carbon',
         ellipsis: true,
         customRender: (text, row, index) => {
           if (text !== null) {

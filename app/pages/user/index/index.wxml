@@ -13,6 +13,79 @@
         </view> -->
     </block>
 </view>
+
+<view wx:if="{{dataMap != null}}">
+    <!-- 碳排放数据展示区域 -->
+    <view class="carbon-data-container radius bg-white margin-top">
+        <view class="carbon-header padding">
+            <view class="flex justify-between align-center">
+                <view class="text-xl text-bold text-green">🌱 我的环保贡献</view>
+                <view class="cu-tag bg-green radius sm">环保达人</view>
+            </view>
+        </view>
+
+        <!-- 总减碳量 -->
+        <view class="carbon-total padding-lr">
+            <view class="flex justify-center align-center padding-bottom">
+                <view class="text-center">
+                    <view class="text-green text-xxl">{{dataMap.totalCarbonReduction}}</view>
+                    <view class="text-gray text-sm">累计减碳量(kg)</view>
+                </view>
+            </view>
+        </view>
+
+        <!-- 月度对比 -->
+        <view class="carbon-monthly padding-lr padding-bottom">
+            <view class="flex justify-between text-center">
+                <view class="flex-sub">
+                    <view class="text-orange text-xl">{{dataMap.currentMonthCarbonReduction}}</view>
+                    <view class="text-gray text-sm">本月减碳</view>
+                </view>
+                <view class="flex-sub">
+                    <view class="text-blue text-xl">{{dataMap.lastMonthCarbonReduction}}</view>
+                    <view class="text-gray text-sm">上月减碳</view>
+                </view>
+                <view class="flex-sub">
+                    <view class="text-{{dataMap.carbonReductionComparison >= 0 ? 'green' : 'red'}} text-xl">
+                        {{dataMap.carbonReductionComparison >= 0 ? '+' : ''}}{{dataMap.carbonReductionComparison}}
+                    </view>
+                    <view class="text-gray text-sm">环比变化</view>
+                </view>
+            </view>
+        </view>
+
+        <!-- 环保等效展示 -->
+        <view class="carbon-equivalent padding solid-top">
+            <view class="text-center text-gray text-sm margin-bottom">环保贡献等效于</view>
+            <view class="flex flex-wrap justify-between">
+                <view class="equivalent-item text-center margin-bottom-sm">
+                    <view class="text-green ">{{dataMap.drivingHoursEquivalent}}</view>
+                    <view class="text-gray text-sm">小时驾车</view>
+                </view>
+                <view class="equivalent-item text-center margin-bottom-sm">
+                    <view class="text-green ">{{dataMap.treesPlantedEquivalent}}</view>
+                    <view class="text-gray text-sm">棵树一年</view>
+                </view>
+                <view class="equivalent-item text-center margin-bottom-sm">
+                    <view class="text-green">{{dataMap.elevatorRidesEquivalent}}</view>
+                    <view class="text-gray text-sm">次乘梯</view>
+                </view>
+            </view>
+        </view>
+
+        <!-- 环保进度条 -->
+        <view class="carbon-progress padding-lr padding-top">
+            <view class="text-gray text-sm margin-bottom">本月环保目标完成度</view>
+            <view class="cu-progress radius striped active">
+                <view class="bg-green" style="width:{{dataMap.currentMonthCarbonReduction > 10 ? 100 : (dataMap.currentMonthCarbonReduction * 10)}}%"></view>
+            </view>
+            <view class="flex justify-between text-gray text-sm margin-top-xs">
+                <text>0kg</text>
+                <text>10kg+</text>
+            </view>
+        </view>
+    </view>
+</view>
 <view class="cu-list menu card-menu margin-top-xl margin-bottom-xl shadow-lg">
     <view class="cu-item arrow">
         <navigator class='content' open-type="navigate" hover-class='none' url="/pages/order/index/index">
@@ -20,12 +93,18 @@
             <text class='text-grey'>我的订单</text>
         </navigator>
     </view>
-    <!-- <view class="cu-item arrow">
+     <view class="cu-item arrow">
         <navigator class='content' open-type="navigate" hover-class='none' url="/pages/vipcard/index/index">
             <text class='icon-vipcard text-green'></text>
-            <text class='text-grey'>会员卡</text>
+            <text class='text-grey'>积分物品</text>
         </navigator>
-    </view> -->
+    </view>
+    <view class="cu-item arrow">
+        <navigator class='content' open-type="navigate" hover-class='none' url="/pages/vipcard/record/index">
+            <text class='icon-record text-green'></text>
+            <text class='text-grey'>兑换记录</text>
+        </navigator>
+    </view>
     <view class="cu-item arrow">
         <navigator class='content' open-type="navigate" hover-class='none' url="/pages/coupon/index/index">
             <text class='icon-ticket text-red'></text>
@@ -38,10 +117,10 @@
             <text class='text-grey'>地址管理</text>
         </navigator>
     </view>
-    <!-- <view class="cu-item arrow" wx:if="{{userInfo.type == 2}}">
+     <view class="cu-item arrow" wx:if="{{userInfo.type == 2}}">
         <navigator class='content' open-type="navigate" hover-class='none' url="/pages/user/goods/index">
             <text class='icon-vipcard text-green'></text>
-            <text class='text-grey'>我的商品</text>
+            <text class='text-grey'>积分记录</text>
         </navigator>
-    </view> -->
+    </view>
 </view>

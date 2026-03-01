@@ -1,0 +1,73 @@
+
+<!-- 状态栏区域 -->
+<view class="cu-custom" style="height:{{CustomBar}}px;">
+    <view class="cu-bar fixed none-bg text-white bg-img" style="height:{{CustomBar}}px;padding-top:{{StatusBar}}px;">
+        <navigator class='action canui-head-title' open-type="navigateBack" hover-class="none">
+            <text class='icon-back'></text>
+            兑换记录
+        </navigator>
+    </view>
+</view>
+<view class="box" style="top: {{CustomBar}}px;">
+    <view class="canui-card-order margin-top">
+        <!-- 兑换记录列表 -->
+        <view class="exchange-record-list">
+            <view class="exchange-item shadow-warp radius bg-white margin-bottom" wx:for="{{orderList}}" wx:key="id">
+                <!-- 订单头部信息 -->
+                <view class="exchange-header flex justify-between align-center padding">
+                    <view class="flex align-center">
+                        <text class="text-orange text-lg margin-right-xs">🏪</text>
+                        <text class="text-bold">兑换订单 #{{item.id}}</text>
+                    </view>
+                    <view class="text-orange text-sm">
+                        {{item.createDate}}
+                    </view>
+                </view>
+
+                <!-- 商品信息 -->
+                <view class="exchange-content padding-lr padding-bottom">
+                    <view class="flex">
+                        <!-- 商品图片 -->
+                        <view class="exchange-image">
+                            <image class="response radius" src="http://127.0.0.1:9527/imagesWeb/{{item.materialImages}}" mode="aspectFill"></image>
+                        </view>
+
+                        <!-- 商品详情 -->
+                        <view class="flex-sub margin-left">
+                            <view class="exchange-material-name text-bold " style="font-size: 13px">{{item.materialName}}</view>
+                            <view class="exchange-user-info flex align-center margin-top-sm">
+                                <image class="cu-avatar sm round" src="{{item.userImages}}"></image>
+                                <text class="text-gray text-sm margin-left-xs">{{item.userName}}</text>
+                            </view>
+
+                            <!-- 积分信息 -->
+                            <view class="exchange-integral flex align-center margin-top">
+                                <text class="text-red text-price">{{item.integral}}</text>
+                                <text class="text-red text-sm margin-left-xs">积分</text>
+                            </view>
+                        </view>
+                    </view>
+                </view>
+
+                <!-- 订单状态和操作 -->
+                <view class="exchange-footer flex justify-between align-center padding solid-top">
+                    <view class="exchange-status">
+                        <text class="cu-tag bg-green radius sm">兑换成功</text>
+                    </view>
+<!--                    <view class="exchange-actions">-->
+<!--                        <button class="cu-btn round line-green sm" bindtap="viewExchangeDetail" data-id="{{item.id}}">-->
+<!--                            查看详情-->
+<!--                        </button>-->
+<!--                    </view>-->
+                </view>
+            </view>
+
+            <!-- 空状态 -->
+            <view wx:if="{{orderList.length === 0}}" class="empty-state text-center padding-xl">
+                <view class="icon-empty text-gray text-xxl margin-bottom">📋</view>
+                <view class="text-gray">暂无兑换记录</view>
+                <view class="text-gray text-sm margin-top">快去积分商城兑换心仪的商品吧</view>
+            </view>
+        </view>
+    </view>
+</view>

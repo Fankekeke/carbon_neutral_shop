@@ -4,6 +4,28 @@
 
     <!-- 分页获取积分记录信息 -->
     <select id="queryPage" resultType="java.util.LinkedHashMap">
+        SELECT
+        ir.id,
+        ir.type,
+        ir.content,
+        ir.integral,
+        ir.create_date,
+        ir.user_id ,
 
+        ui.user_name AS userName,
+        ui.avatar AS avatar
+        FROM
+        integral_record ir
+        left join user_info ui on (ui.id =ir.user_id)
+        WHERE
+        1 = 1
+        <if test="integralRecord.userName != null and integralRecord.userName != ''">
+            AND ui.name LIKE CONCAT('%',#{integralRecord.userName},'%')
+        </if>
+        <if test="integralRecord.type != null and integralRecord.type != ''">
+            AND ir.type = #{integralRecord.type}
+        </if>
+        ORDER BY
+        ir.create_date DESC
     </select>
 </mapper>

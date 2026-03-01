@@ -7,14 +7,6 @@
           <div :class="advanced ? null: 'fold'">
             <a-col :md="6" :sm="24">
               <a-form-item
-                label="记录编号"
-                :labelCol="{span: 5}"
-                :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.code"/>
-              </a-form-item>
-            </a-col>
-            <a-col :md="6" :sm="24">
-              <a-form-item
                 label="用户名称"
                 :labelCol="{span: 5}"
                 :wrapperCol="{span: 18, offset: 1}">
@@ -130,20 +122,10 @@ export default {
           if (!record.userImages) return <a-avatar shape="square" icon="user" />
           return <a-popover>
             <template slot="content">
-              <a-avatar shape="square" size={132} icon="user" src={ 'http://127.0.0.1:9527/imagesWeb/' + record.userImages.split(',')[0] } />
+              <a-avatar shape="square" size={132} icon="user" src={ record.userImages } />
             </template>
-            <a-avatar shape="square" icon="user" src={ 'http://127.0.0.1:9527/imagesWeb/' + record.userImages.split(',')[0] } />
+            <a-avatar shape="square" icon="user" src={ record.userImages } />
           </a-popover>
-        }
-      }, {
-        title: '邮箱地址',
-        dataIndex: 'mail',
-        customRender: (text, row, index) => {
-          if (text !== null) {
-            return text
-          } else {
-            return '- -'
-          }
         }
       }, {
         title: '消耗积分',
@@ -166,6 +148,18 @@ export default {
           }
         }
       }, {
+        title: '物品图片',
+        dataIndex: 'materialImages',
+        customRender: (text, record, index) => {
+          if (!record.materialImages) return <a-avatar shape="square" icon="user" />
+          return <a-popover>
+            <template slot="content">
+              <a-avatar shape="square" size={132} icon="user" src={ 'http://127.0.0.1:9527/imagesWeb/' + record.materialImages.split(',')[0] } />
+            </template>
+            <a-avatar shape="square" icon="user" src={ 'http://127.0.0.1:9527/imagesWeb/' + record.materialImages.split(',')[0] } />
+          </a-popover>
+        }
+      }, {
         title: '兑换记录时间',
         dataIndex: 'createDate',
         customRender: (text, row, index) => {
@@ -175,10 +169,6 @@ export default {
             return '- -'
           }
         }
-      }, {
-        title: '操作',
-        dataIndex: 'operation',
-        scopedSlots: {customRender: 'operation'}
       }]
     }
   },

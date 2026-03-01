@@ -21,10 +21,7 @@
 <!-- 商品属性 -->
 <view class="bg-white grid col-3 canui-goods-box text-gray text-sm">
     <view class='padding-sm'>
-        类型：
-        <text wx:if="{{ goods.type == 1 }}">食品</text>
-        <text wx:if="{{ goods.type == 2 }}">饮品</text>
-        <text wx:if="{{ goods.type == 3 }}">药品</text>
+        碳排放优化：{{ goods.carbon }}
     </view>
     <view class='padding-sm text-center'>销量：{{ goods.orderNum }}笔</view>
     <view class='padding-sm text-right'>快递包邮</view>

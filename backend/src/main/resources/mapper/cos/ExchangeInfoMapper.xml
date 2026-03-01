@@ -5,26 +5,24 @@
     <!-- 分页获取积分兑换信息 -->
     <select id="selectExChangePage" resultType="java.util.LinkedHashMap">
         select
-            ei.id,
-            ei.material_id,
-            ei.user_id,
-            ei.integral,
-            ei.create_date,
-            ui.code,
-            ui.images as userImages,
-            ui.name as userName,
-            ui.mail,
-            ui.address,
-            mi.name as materialName,
-            mi.images as materialImages
+        ei.id,
+        ei.material_id,
+        ei.user_id,
+        ei.integral,
+        ei.create_date,
+        ui.code,
+        ui.user_name AS userName,
+        ui.avatar AS userImages,
+        mi.name as materialName,
+        mi.images as materialImages
         from
-            exchange_info ei
-                left join user_info ui on
-                (ui.id = ei.user_id)
-                left join material_info mi on
-                (ei.material_id = mi.id)
+        exchange_info ei
+        left join user_info ui on
+        (ui.id = ei.user_id)
+        left join material_info mi on
+        (ei.material_id = mi.id)
         where
-            1 = 1
+        1 = 1
         <if test="exchangeInfo.code != null and exchangeInfo.code != ''">
             AND ui.code LIKE CONCAT('%',#{exchangeInfo.code},'%')
         </if>
@@ -41,7 +39,33 @@
             AND ei.material_id = #{exchangeInfo.materialId}
         </if>
         order by
-            ei.create_date desc
+        ei.create_date desc
 
+    </select>
+
+    <!-- 获取用户积分兑换信息 -->
+    <select id="queryExchangeByUser" resultType="java.util.LinkedHashMap">
+        select
+        ei.id,
+        ei.material_id,
+        ei.user_id,
+        ei.integral,
+        ei.create_date,
+        ui.code,
+        ui.user_name AS userName,
+        ui.avatar AS userImages,
+        mi.name as materialName,
+        mi.images as materialImages
+        from
+        exchange_info ei
+        left join user_info ui on
+        (ui.id = ei.user_id)
+        left join material_info mi on
+        (ei.material_id = mi.id)
+        where
+        1 = 1
+        AND ui.id = #{userId}
+        order by
+        ei.create_date desc
     </select>
 </mapper>

@@ -2,49 +2,78 @@
 <view class="cu-custom" style="height:{{CustomBar}}px;">
     <view class="cu-bar fixed none-bg text-white bg-img" style="height:{{CustomBar}}px;padding-top:{{StatusBar}}px;">
         <navigator class='action canui-head-title' open-type="navigateBack" hover-class="none">
-            <text class='icon-back'></text> 会员卡
+            <text class='icon-back'></text> 积分物品
         </navigator>
     </view>
 </view>
 
+
 <view class="box" style="top: {{CustomBar}}px;">
 
-    <scroll-view scroll-x class="bg-white nav">
-        <view class='flex text-center'>
-            <view class="cu-item flex-sub {{item.id==TabCur?'text-red cur':''}}" wx:for="{{SortMenu}}" wx:key="item.id" bindtap='tabSelect' data-id="{{item.id}}">
-                {{item.name}}
+    <view class="canui-card margin-top">
+        <!-- 用户积分信息展示 -->
+        <view class="user-integral-card shadow-warp radius bg-white margin-bottom">
+            <view class="flex align-center padding" wx:if="{{userDetail !== null}}">
+                <!-- 用户头像 -->
+                <view class="cu-avatar xl round" style="background-image:url({{userDetail.avatar}});">
+<!--                    <view wx:if="{{!userDetail.userName}}" class="avatar-text">{{userDetail.userName?.substring(0,1)}}</view>-->
+                </view>
+
+                <!-- 用户信息和积分 -->
+                <view class="flex-sub margin-left-sm">
+                    <view class="text-xl text-bold" style="font-size: 14px">{{userDetail.userName}}</view>
+                    <view class="flex align-center margin-top-xs">
+                        <text class="text-gray">当前积分：</text>
+                        <text wx:if="{{userDetail.integral !== null}}" class="text-orange text-sl" style="font-size: 18px">{{userDetail.integral}}</text>
+                        <text wx:else class="text-gray">暂无积分</text>
+                    </view>
+                </view>
+
+            </view>
+
+        </view>
+
+        <!-- 积分兑换物品列表 -->
+        <view class="material-grid">
+            <view class="grid-content">
+                <view class="material-item shadow-warp radius bg-white" wx:for="{{materialInfoList}}" wx:key="id" wx:for-item="item" wx:for-index="index">
+                    <!-- 商品图片 -->
+                    <view class="material-image">
+                        <image class="response radius" src="http://127.0.0.1:9527/imagesWeb/{{item.images}}" mode="aspectFill" lazy-load="true"></image>
+                    </view>
+
+                    <!-- 商品信息 -->
+                    <view class="material-info padding">
+                        <view class="material-name text-bold text-cut">{{item.name}}</view>
+                        <view class="material-content text-gray text-sm text-cut">{{item.content}}</view>
+
+                        <!-- 积分和销量信息 -->
+                        <view class="material-meta flex justify-between align-center">
+                            <view class="integral-info">
+                                <text class="text-red text-price">{{item.integral}}</text>
+                                <text class="text-red text-sm">积分</text>
+                            </view>
+                            <view class="sale-info text-gray text-sm">
+                                已售 {{item.saleNum}} 件
+                            </view>
+                        </view>
+
+                        <!-- 兑换按钮 -->
+                        <view class="exchange-btn">
+                            <button class="cu-btn block round bg-green sm" bindtap="exchangeMaterial" data-material="{{item}}">
+                                立即兑换
+                            </button>
+                        </view>
+                    </view>
+                </view>
+            </view>
+
+            <!-- 空状态 -->
+            <view wx:if="{{materialInfoList.length === 0}}" class="empty-state text-center padding-xl">
+                <view class="icon-empty text-gray text-xxl margin-bottom">📭</view>
+                <view class="text-gray">暂无积分兑换物品</view>
             </view>
         </view>
-    </scroll-view>
-
-    <view class="canui-card margin-top">
-
-        <view class="canui-item">
-            <navigator open-type="navigate" hover-class='none' url="/pages/vipcard/details/index">
-                <view class="canui-card-bg-img radius shadow-warp" style="background-image: url('https://cdn.nlark.com/yuque/0/2019/jpeg/285274/1552962638649-assets/web-upload/25d4b7d6-e41b-431d-9b5b-43fa3b575b39.jpeg')">
-                    <view class='bg-shadeTop radius'>
-                        <view class="canui-card-head">
-                            <view class="cu-avatar round" style="background-image:url(https://image.weilanwl.com/img/square-1.jpg);"></view>
-                            <text class="canui-card-name">某某某店铺会员卡</text>
-                        </view>
-                    </view>
-                </view>
-            </navigator>
-        </view>
-
-        <view class="canui-item">
-            <navigator open-type="navigate" hover-class='none' url="/pages/vipcard/details/index">
-                <view class="canui-card-bg-img radius shadow-warp" style="background-image: url('https://cdn.nlark.com/yuque/0/2019/jpeg/280373/1551799188571-assets/web-upload/9d73921e-c4e4-4231-a07a-4caca0d26b64.jpeg')">
-                    <view class='bg-shadeTop radius'>
-                        <view class="canui-card-head">
-                            <view class="cu-avatar round" style="background-image:url(https://image.weilanwl.com/img/square-1.jpg);"></view>
-                            <text class="canui-card-name">某某某店铺会员卡</text>
-                        </view>
-                    </view>
-                </view>
-            </navigator>
-        </view>
-
     </view>
 
 </view>
