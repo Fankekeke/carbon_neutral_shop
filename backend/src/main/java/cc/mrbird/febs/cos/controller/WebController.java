@@ -219,11 +219,13 @@ public class WebController {
         BigDecimal totalCarbonReduction = orderInfoList.stream()
                 .map(OrderInfo::getCarbonConsumption)
                 .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(new BigDecimal("1000"), 2, BigDecimal.ROUND_HALF_UP); // 转换为kg
 
         // 返回结果
         LinkedHashMap<String, Object> result = new LinkedHashMap<>();
         result.put("totalCarbonReduction", totalCarbonReduction);
+
         // 上月开始时间和结束时间
         String lastMonthStart = DateUtil.beginOfMonth(DateUtil.offsetMonth(new Date(), -1)).toString();
         String lastMonthEnd = DateUtil.endOfMonth(DateUtil.offsetMonth(new Date(), -1)).toString();
@@ -234,23 +236,24 @@ public class WebController {
                 .ne(OrderInfo::getOrderStatus, 0)
                 .between(OrderInfo::getCreateDate, lastMonthStart, lastMonthEnd));
 
-        // 计算上月减碳量
+        // 计算上月减碳量（从克转为千克）
         BigDecimal lastMonthCarbonReduction = lastMonthOrderList.stream()
                 .map(OrderInfo::getCarbonConsumption)
                 .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(new BigDecimal("1000"), 2, BigDecimal.ROUND_HALF_UP); // 转换为kg
 
-        // 对比当前月和上月减碳量
+        // 对比当前月和上月减碳量（从克转为千克）
         BigDecimal currentMonthCarbonReduction = orderInfoList.stream()
                 .filter(order -> DateUtil.parse(order.getCreateDate()).isAfterOrEquals(DateUtil.beginOfMonth(new Date())))
                 .map(OrderInfo::getCarbonConsumption)
                 .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(new BigDecimal("1000"), 2, BigDecimal.ROUND_HALF_UP); // 转换为kg
 
         result.put("currentMonthCarbonReduction", currentMonthCarbonReduction);
         result.put("lastMonthCarbonReduction", lastMonthCarbonReduction);
         result.put("carbonReductionComparison", currentMonthCarbonReduction.subtract(lastMonthCarbonReduction));
-
 
         // 定义换算常量
         BigDecimal drivingPerHour = new BigDecimal("0.2"); // 开车1小时碳排放
@@ -825,6 +828,17 @@ public class WebController {
     }
 
     /**
+     * 查询用户详情
+     *
+     * @param userId
+     * @return 详情
+     */
+    @GetMapping("/queryUserDetail")
+    public R queryUserDetail(Integer userId) {
+        return R.ok(userInfoService.getOne(Wrappers.<UserInfo>lambdaQuery().eq(UserInfo::getId, userId)));
+    }
+
+    /**
      * 查询兑换物品信息
      *
      * @return 物品信息
@@ -842,6 +856,7 @@ public class WebController {
      */
     @PostMapping("/exchangeInfoAdd")
     public R exchangeInfoAdd(@RequestBody ExchangeInfo exchangeInfo) throws FebsException {
+        exchangeInfo.setCreateDate(DateUtil.formatDateTime(new Date()));
         return R.ok(exchangeInfoService.addExchange(exchangeInfo));
     }
 
@@ -853,5 +868,15 @@ public class WebController {
     @GetMapping("/queryIntegralRecordList")
     public R queryIntegralRecordList(Integer userId) {
         return R.ok(integralRecordService.list(Wrappers.<IntegralRecord>lambdaQuery().eq(IntegralRecord::getUserId, userId)));
+    }
+
+    /**
+     * 查询兑换信息
+     *
+     * @return 兑换信息
+     */
+    @GetMapping("/queryExchangeInfoList")
+    public R queryExchangeInfoList(Integer userId) {
+        return R.ok(exchangeInfoService.queryExchangeByUser(userId));
     }
 }
